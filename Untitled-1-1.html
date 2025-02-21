@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Interativo - UniAnchieta</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js">        function destacarTabela(destinoNome) {
+            var linhas = document.querySelectorAll("#info-container table tr");
+            linhas.forEach(linha => linha.style.backgroundColor = "white");
+            linhas.forEach(linha => linha.style.color = "black");
+            
+            for (var i = 1; i < linhas.length; i++) {
+                if (linhas[i].cells[0].textContent === destinoNome) {
+                    linhas[i].style.backgroundColor = "red";
+                    linhas[i].style.color = "white";
+                }
+      
+    </script>
+    
+    <style>
+        body {
+            background: radial-gradient(circle, #1e3c72, #2a5298, #ffffff);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #map {
+            height: 500px;
+            margin: 10px auto;
+            width: 70%;
+            border: 2px solid white;
+        }
+        #qrcode-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            
+            
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;
+        }
+        #download-qrcode {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background-color: #0056b3;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #download-qrcode:hover {
+            background-color: #003f7f;
+        }
+        #logo-container {
+            position: static;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        select, button {
+            margin: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #0056b3;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #003f7f;
+        }
+        @media (max-width: 768px) {
+            #map {
+                width: 90%;
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Mapa Interativo - UniAnchieta</h2>
+
+    <div id="map"></div>
+
+    <label for="destino">Escolha um destino:</label>
+    <select id="destino">
+        <option value="-23.214361944061388,-46.89156384709646">Prédio 1</option>
+        <option value="-23.21286811652687,-46.89295256165431">Prédio 2</option>
+        <option value="-23.213937955105724,-46.892882857834785">Prédio 3</option>
+        <option value="-23.214599975061883,-46.8934301920265">Prédio 4</option>
+        <option value="-23.215347959684838,-46.89117200669036">Anfiteatro</option>
+        <option value="-23.213484384035493,-46.89236257392991">Área Food Truck</option>
+        <option value="-23.21397246588498,-46.89193898918061">Cantina</option>
+    </select>
+    <button onclick="buscarRota()">Ir</button>
+    <br>
+    <label for="voz">Ativar auxílio de voz</label>
+    <input type="checkbox" id="voz" checked>
+    
+    
+    <div id="info-container">
+        <h3>Informações dos Prédios</h3>
+        <table style="margin: auto; background: white; color: black; width: 90%; border-collapse: collapse;  overflow: hidden; ">
+            <tr>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Prédio</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Andar/Salas</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Labs</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Curso</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Coordenador</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Disciplinas</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Docentes</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Horário (Manhã/Noite)</th>
+                <th style="background: #0056b3; color: white; padding: 10px; border-bottom: 2px solid #ddd;">Data</th>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prédio 1</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">1º Andar - Sala 101</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Lab Informática</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Engenharia</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. João Silva</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Cálculo</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Ana Souza</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">08:00 - 12:00 / 19:00 - 22:00</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Seg-Sex</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prédio 2</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">2º Andar - Sala 202</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Lab Química</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Farmácia</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Carla Mendes</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Bioquímica</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Eduardo Lima</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">08:30 - 12:30 / 18:30 - 21:30</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Seg-Sáb</td>
+            </tr>
+                    <tr>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prédio 3</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">3º Andar - Sala 303</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Lab Física</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Física</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Ricardo Oliveira</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Mecânica Clássica</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Mariana Costa</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">07:30 - 11:30 / 18:00 - 21:30</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Seg-Sex</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prédio 4</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">4º Andar - Sala 405</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Lab Biologia</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Biomedicina</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Fernanda Almeida</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Microbiologia</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Lucas Fernandes</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">08:00 - 12:00 / 19:00 - 22:00</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Seg-Sáb</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Anfiteatro</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Térreo</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">N/A</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Eventos e Palestras</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Prof. Gustavo Nunes</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Diversos</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Vários Convidados</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Horários Variáveis</td>
+                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Datas Agendadas</td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        var map = L.map('map').setView([-23.214327433382742, -46.892293061456655], 17);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        var locais = [
+            { nome: "Prédio 1", coords: [-23.214361944061388, -46.89156384709646] },
+            { nome: "Prédio 2", coords: [-23.21286811652687, -46.89295256165431] },
+            { nome: "Prédio 3", coords: [-23.213937955105724, -46.892882857834785] },
+            { nome: "Prédio 4", coords: [-23.214599975061883, -46.8934301920265] },
+            { nome: "Anfiteatro", coords: [-23.215347959684838, -46.89117200669036] },
+            { nome: "Área Food Truck", coords: [-23.213484384035493, -46.89236257392991] },
+            { nome: "Biblioteca", coords: [-23.213223086958976, -46.892657474704734] },
+            { nome: "Cantina", coords: [-23.21397246588498, -46.89193898918061] }
+        ];
+        locais.forEach(local => {
+            L.marker(local.coords).addTo(map).bindPopup(`<b>${local.nome}</b>`);
+        });
+        function buscarRota() {
+            var destino = document.getElementById('destino').value.split(',');
+            var lat = parseFloat(destino[0]);
+            var lng = parseFloat(destino[1]);
+
+            L.marker([lat, lng]).addTo(map).bindPopup("Destino: " + document.getElementById('destino').selectedOptions[0].text).openPopup();
+            map.setView([lat, lng], 18);
+            
+            if (document.getElementById('voz').checked) {
+                var synth = window.speechSynthesis;
+                var utterance = new SpeechSynthesisUtterance("Indo para " + document.getElementById('destino').selectedOptions[0].text);
+                synth.speak(utterance);
+            }
+        }
+        
+        
+    </script>
+<div id="logo-container" style="position: static; bottom: 20px; right: 20px; opacity: 0.9;">
+        <img src="https://www2.intranet.anchieta.br/sistema_anchieta/EAD/Tickets2/images/Unianchieta-01.png" alt="Logo UniAnchieta" width="130" style="border: none; background: none;">
+    </div>
+</body>
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+<div id="qrcode-map-container" style="margin-top: 20px;">
+    <button id="generate-qrcode-btn" onclick="generateQRCodeForMap()" style="background-color: #0056b3; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Gerar QR Code do Mapa</button>
+    <div id="qrcode-map" style="margin-top: 15px;"></div>
+</div>
+
+<script>
+    function generateQRCodeForMap() {
+        var qrContainer = document.getElementById('qrcode-map');
+        qrContainer.innerHTML = ""; // Limpar QR Code anterior
+        var mapUrl = window.location.href; // URL atual do mapa
+        var qr = new QRious({
+            element: document.createElement("canvas"),
+            value: mapUrl,
+            size: 200
+        });
+        qrContainer.appendChild(qr.element);
+    }
+</script>
+
